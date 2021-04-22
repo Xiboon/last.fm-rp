@@ -1,4 +1,5 @@
 {
-    "user": "",
-    "apikey: ""
+    "url": "https://ws.audioscrobbler.com/2.0/",
+    "user": "Xibooon",
+    "apikey": "935b82fc9659dda9af6edaadc6ea3ae4"
 }

@@ -1,6 +1,6 @@
 import EventEmitter from 'events';
-import get from 'axios';
-const { url } = require('../config.json');
+import get, { AxiosResponse } from 'axios';
+const { url } = require('../../config.json');
 export default class SongHandler extends EventEmitter {
   lastSong: string;
   song: string;
@@ -15,7 +15,7 @@ export default class SongHandler extends EventEmitter {
     this.song = 'none';
 
     setInterval(async () => {
-      let lastfm: any = await get(
+      const lastfm: any = await get(
         `${url}?method=user.getrecenttracks&user=${user}&api_key=${key}&format=json&limit=10`,
       ).catch((e) => {
         console.error('There was an error!');
@@ -25,7 +25,10 @@ export default class SongHandler extends EventEmitter {
       this.song = `${this.parseTrack(lastfm).artist['#text']} - ${
         this.parseTrack(lastfm).name
       }`;
-
+      if (lastfm.data.recenttracks.track[0]['@attr']?.nowplaying !== 'true') {
+        this.lastSong = 'pause';
+        this.emit('songPause');
+      }
       if (this.song === this.lastSong) return;
 
       this.emit('songChange', lastfm);
@@ -33,7 +36,7 @@ export default class SongHandler extends EventEmitter {
       this.lastSong = `${this.parseTrack(lastfm).artist['#text']} - ${
         this.parseTrack(lastfm).name
       }`;
-    }, 3000);
+    }, 2500);
   }
   async getSongInfo(author: string, song: string) {
     const data = await get(
@@ -46,7 +49,7 @@ export default class SongHandler extends EventEmitter {
     return data.data.track;
   }
 
-  parseTrack(song: any) {
+  parseTrack(song: AxiosResponse<any>) {
     return song?.data.recenttracks.track[0];
   }
 }
